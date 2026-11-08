@@ -15,6 +15,15 @@ regardless of which file version it encounters.
 from __future__ import annotations
 import pandas as pd
 
+KNOWN_FLAGS = {"yes", "no", "true", "false", "pass", "fail"}
+
+
+def _is_flag_column(col_vals: pd.Series) -> bool:
+    if col_vals.empty:
+        return False
+    normalized = col_vals.astype(str).str.strip().str.lower()
+    return normalized.isin(KNOWN_FLAGS).all()
+
 
 def detect_sensor_columns(
     df: pd.DataFrame,
@@ -26,9 +35,9 @@ def detect_sensor_columns(
     Fixed columns (timestamp, pH, ORP, temperature, conductivity) are
     taken as-is from fixed_cols. Starting from the column immediately
     after the last fixed column, this function scans forward, skips any
-    column whose non-null values are entirely alphabetic text (the flag
-    column pattern), and assigns the next numeric columns to
-    remaining_sensors in order.
+    column whose non-null values consist entirely of known flag values
+    (yes/no/true/false/pass/fail), and assigns the remaining numeric
+    columns to remaining_sensors in order.
 
     Args:
         df:                Raw DataFrame read with header=None so columns
@@ -40,6 +49,9 @@ def detect_sensor_columns(
 
     Returns:
         Complete mapping, including fixed_cols and newly detected columns.
+
+    Raises:
+        ValueError: If fewer numeric columns are found than remaining_sensors.
     """
     col_map = dict(fixed_cols)
     boundary = max(fixed_cols) + 1
@@ -48,19 +60,19 @@ def detect_sensor_columns(
     numeric_cols: list[int] = []
     for ci in range(boundary, n_cols):
         col_vals = df[ci].dropna()
-        is_text_only = (
-            not col_vals.empty
-            and pd.to_numeric(col_vals, errors="coerce").isna().all()
-            and col_vals.astype(str).str.match(r"^[A-Za-z]").any()
-        )
-        if not is_text_only:
+        if not _is_flag_column(col_vals):
             numeric_cols.append(ci)
         if len(numeric_cols) >= len(remaining_sensors):
             break
 
+    if len(numeric_cols) < len(remaining_sensors):
+        raise ValueError(
+            f"Expected {len(remaining_sensors)} sensor columns after the fixed "
+            f"boundary but found only {len(numeric_cols)}. Check the source file."
+        )
+
     for i, sensor_name in enumerate(remaining_sensors):
-        if i < len(numeric_cols):
-            col_map[numeric_cols[i]] = sensor_name
+        col_map[numeric_cols[i]] = sensor_name
 
     return col_map
 
