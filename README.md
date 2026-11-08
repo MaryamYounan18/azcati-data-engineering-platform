@@ -10,6 +10,28 @@ The platform supports the processing and integration of historical research data
 
 ---
 
+## Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+python -m pytest -q
+
+# Generate synthetic demo data
+python -m demo.generate_synthetic_data
+
+# Run the end-to-end demo
+python -m demo.run_demo
+
+# Optional: generate sensor QC plot
+python -m demo.plot_demo
+```
+
+> Run all commands from the repository root.
+
+
 ## Project Overview
 
 Large-scale algae cultivation research generates substantial amounts of data from multiple sources, including environmental sensors, laboratory measurements, microscopy observations, and experimental records.
