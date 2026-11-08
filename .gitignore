@@ -1,0 +1,29 @@
+# Demo generated data
+demo/data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Env
+.env
+.venv
+venv/
+
+# macOS
+.DS_Store
+
+# SQLite (keep schema, not local DBs)
+*.db
+*.sqlite
