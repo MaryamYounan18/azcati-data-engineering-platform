@@ -30,7 +30,7 @@ python -m demo.plot_demo
 ```
 
 > Run all commands from the repository root.
-
+---
 
 ## Project Overview
 
